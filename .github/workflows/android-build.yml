@@ -1,0 +1,32 @@
+name: Android Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Setup Android SDK
+        run: |
+          sudo apt-get install -y openjdk-11-jdk
+          wget https://dl.google.com/android/repository/commandlinetools-linux-6200805_latest.zip
+          unzip commandlinetools-linux-6200805_latest.zip -d $HOME/android-sdk
+          yes | $HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/android-sdk --licenses
+          $HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/android-sdk "platforms;android-30"
+
+      - name: Build APK
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: HelloWorldApp
+          path: bin/HelloWorldApp.apk
