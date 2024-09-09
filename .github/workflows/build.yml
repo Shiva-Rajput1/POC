@@ -24,8 +24,5 @@ jobs:
       - name: Install eas-cli
         run: npm install -g eas-cli
 
-      - name: Configure EAS
-        run: eas build:configure
-
       - name: Build the app
         run: eas build --platform all
