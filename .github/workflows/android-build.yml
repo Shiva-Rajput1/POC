@@ -12,18 +12,103 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       
-      - name: Setup Android SDK
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+      
+      - name: Install Android SDK
         run: |
-          sudo apt-get install -y openjdk-11-jdk
-          wget https://dl.google.com/android/repository/commandlinetools-linux-6200805_latest.zip
-          unzip commandlinetools-linux-6200805_latest.zip -d $HOME/android-sdk
-          yes | $HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/android-sdk --licenses
-          $HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/android-sdk "platforms;android-30"
+          # Create directories for Android SDK
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          mkdir -p $HOME/android-sdk/platforms
+
+          # Download command-line tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip
+          unzip commandlinetools-linux-6609375_latest.zip -d $HOME/android-sdk/cmdline-tools
+          mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
+
+          # Install SDK components
+          yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android-sdk --licenses
+          $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android-sdk "platforms;android-30" "build-tools;30.0.3"
+
+      - name: Create Hello World Project
+        run: |
+          mkdir -p src/com/example/helloworld/res/layout
+          mkdir -p src/com/example/helloworld/res/values
+
+          # Create AndroidManifest.xml
+          echo '<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.helloworld">
+    <application
+        android:label="@string/app_name">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>' > AndroidManifest.xml
+
+          # Create MainActivity.java
+          echo 'package com.example.helloworld;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.widget.TextView;
+
+public class MainActivity extends Activity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        TextView textView = new TextView(this);
+        textView.setText("Hello World");
+        setContentView(textView);
+    }
+}' > src/com/example/helloworld/MainActivity.java
+
+          # Create layout file
+          echo '<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name" />
+</RelativeLayout>' > src/com/example/helloworld/res/layout/activity_main.xml
+
+          # Create strings.xml
+          echo '<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hello World App</string>
+</resources>' > src/com/example/helloworld/res/values/strings.xml
 
       - name: Build APK
         run: |
-          chmod +x build.sh
-          ./build.sh
+          # Define the output directory
+          OUTPUT_DIR="bin"
+          mkdir -p $OUTPUT_DIR
+
+          # Compile Java source files
+          javac -source 1.8 -target 1.8 -classpath $HOME/android-sdk/platforms/android-30/android.jar -d $OUTPUT_DIR src/com/example/helloworld/*.java
+
+          # Create the APK file
+          aapt package -f -m -J src -S src/com/example/helloworld/res -I $HOME/android-sdk/platforms/android-30/android.jar -F $OUTPUT_DIR/HelloWorldApp.apk
+
+          # Create the APK
+          dx --dex --output=$OUTPUT_DIR/classes.dex $OUTPUT_DIR/*.class
+
+          # Add the DEX file to the APK
+          aapt add $OUTPUT_DIR/HelloWorldApp.apk $OUTPUT_DIR/classes.dex
+
+          # Generate a debug keystore for signing (if you don't have one)
+          keytool -genkey -v -keystore $HOME/my-release-key.jks -alias alias_name -keyalg RSA -keysize 2048 -validity 10000 -storepass password -keypass password -dname "CN=Demo, OU=Demo, O=Demo, L=Demo, S=Demo, C=IN"
+
+          # Sign the APK
+          apksigner sign --ks $HOME/my-release-key.jks --ks-key-alias alias_name --ks-pass pass:password --key-pass pass:password $OUTPUT_DIR/HelloWorldApp.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v2
