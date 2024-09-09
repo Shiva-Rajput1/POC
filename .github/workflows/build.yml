@@ -43,7 +43,10 @@ jobs:
     - name: Install dependencies
       run: npm install
 
+    - name: Initialize React Native project
+      run: npx react-native init HelloWorldApp
+
     - name: Build the app
       run: |
-        cd android
+        cd HelloWorldApp/android
         ./gradlew assembleRelease
