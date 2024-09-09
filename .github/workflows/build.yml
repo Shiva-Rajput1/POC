@@ -43,5 +43,8 @@ jobs:
     - name: Install dependencies
       run: npm install
 
+    - name: Install React Native CLI
+      run: npm install -g react-native-cli
+
     - name: Build the app
       run: npx react-native run-android --variant=release
