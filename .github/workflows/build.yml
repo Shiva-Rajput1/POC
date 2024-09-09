@@ -26,19 +26,19 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y wget tar unzip
         wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip
-        unzip commandlinetools-linux-7583922_latest.zip -d $HOME/commandlinetools
-        mkdir -p $HOME/Android/Sdk
-        mv $HOME/commandlinetools/cmdline-tools $HOME/Android/Sdk/cmdline-tools
-        yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --licenses
-        $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+        mkdir -p $HOME/Android/Sdk/cmdline-tools
+        unzip commandlinetools-linux-7583922_latest.zip -d $HOME/Android/Sdk/cmdline-tools
+        mv $HOME/Android/Sdk/cmdline-tools/cmdline-tools $HOME/Android/Sdk/cmdline-tools/latest
+        yes | $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+        $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
 
     - name: Set up Android environment variables
       run: |
-        echo "export ANDROID_HOME=$HOME/Android/Sdk" >> $GITHUB_ENV
-        echo "export PATH=$PATH:$ANDROID_HOME/emulator" >> $GITHUB_ENV
-        echo "export PATH=$PATH:$ANDROID_HOME/tools" >> $GITHUB_ENV
-        echo "export PATH=$PATH:$ANDROID_HOME/tools/bin" >> $GITHUB_ENV
-        echo "export PATH=$PATH:$ANDROID_HOME/platform-tools" >> $GITHUB_ENV
+        echo "ANDROID_HOME=$HOME/Android/Sdk" >> $GITHUB_ENV
+        echo "PATH=$PATH:$ANDROID_HOME/emulator" >> $GITHUB_ENV
+        echo "PATH=$PATH:$ANDROID_HOME/tools" >> $GITHUB_ENV
+        echo "PATH=$PATH:$ANDROID_HOME/tools/bin" >> $GITHUB_ENV
+        echo "PATH=$PATH:$ANDROID_HOME/platform-tools" >> $GITHUB_ENV
 
     - name: Install dependencies
       run: npm install
