@@ -1,0 +1,27 @@
+{
+    "name": "HelloWorldApp",
+    "version": "1.0.0",
+    "description": "A simple Hello World React Native app",
+    "main": "index.js",
+    "scripts": {
+      "start": "react-native start",
+      "android": "react-native run-android",
+      "ios": "react-native run-ios"
+    },
+    "dependencies": {
+      "react": "17.0.2",
+      "react-native": "0.66.0"
+    },
+    "devDependencies": {
+      "@babel/core": "^7.15.5",
+      "@babel/runtime": "^7.15.4",
+      "babel-jest": "^27.2.5",
+      "jest": "^27.2.5",
+      "metro-react-native-babel-preset": "^0.66.2",
+      "react-test-renderer": "17.0.2"
+    },
+    "jest": {
+      "preset": "react-native"
+    }
+  }
+  
